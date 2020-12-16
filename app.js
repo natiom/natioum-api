@@ -29,11 +29,9 @@ app.use((req, res, next) => {
 
 
 // All Routes Declarations
-/*
+
 const admin = require('./routes/admin');
-const user = require('./routes/user');
-const content = require('./routes/content');
-*/
+
 
 // All Used Express Routes
 
@@ -41,11 +39,10 @@ const content = require('./routes/content');
 app.use('/word', (req, res, next) => {
     res.json({ msg: "Hello word :)" });
 });
-/*
+
 app.use('/admin', admin);
-app.use('/user', user);
-app.use('/content', content);
-*/
+
+
 
 // All Used Models Declaration
 
@@ -56,10 +53,11 @@ const VilageManager = require('./models/vil-manager');
 const Manager = require('./models/manager');
 
 
+
 // All Models Associations
 
-VilageGov.hasOne(Vilage, {onDelete: 'CASCADE'});
-Vilage.belongsTo(VilageGov);
+Vilage.hasOne(VilageGov, {onDelete: 'CASCADE'});
+VilageGov.belongsTo(Vilage);
 
 Vilage.hasOne(VilageManager, {onDelete: 'CASCADE'});
 VilageManager.belongsTo(Vilage);
