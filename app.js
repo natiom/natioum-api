@@ -48,30 +48,25 @@ app.use('/content', content);
 */
 
 // All Used Models Declaration
-/*
-const Product = require('./models/product');
-const User = require('./models/user');
-const Image = require('./models/image');
-const Order = require('./models/order');
-const ProdSize = require('./models/prod-size');
-const Cart = require('./models/cart');
-*/
+
+const Admin = require('./models/admin');
+const Vilage = require('./models/vilage');
+const VilageGov = require('./models/vilgov');
+const VilageManager = require('./models/vil-manager');
+const Manager = require('./models/manager');
+
 
 // All Models Associations
-/*
-Product.hasMany(Image, {onDelete: 'CASCADE'});
-Image.belongsTo(Product);
 
-Product.hasMany(ProdSize, {onDelete: 'CASCADE'});
-ProdSize.belongsTo(Product);
+VilageGov.hasOne(Vilage, {onDelete: 'CASCADE'});
+Vilage.belongsTo(VilageGov);
 
-User.hasMany(Order, {onDelete: 'CASCADE'});
-Order.belongsTo(User);
+Vilage.hasOne(VilageManager, {onDelete: 'CASCADE'});
+VilageManager.belongsTo(Vilage);
 
+Manager.hasMany(VilageManager, {onDelete: 'CASCADE'});
+VilageManager.belongsTo(Manager);
 
-Product.belongsToMany(User, { through: Cart });
-User.belongsToMany(Product, { through: Cart });
-*/
 
 
 // Error Handler Middleware Which Should Executes Last
@@ -87,7 +82,7 @@ app.use((error, req, res, next) => {
 
 
 
-
+const port = process.env.PORT || 3000;
 
 sequelize
     .sync()
