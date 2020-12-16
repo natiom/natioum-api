@@ -46,7 +46,6 @@ app.use('/admin', admin);
 
 // All Used Models Declaration
 
-const Admin = require('./models/admin');
 const Vilage = require('./models/vilage');
 const VilageGov = require('./models/vilgov');
 const VilageManager = require('./models/vil-manager');
