@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const isAuth = require('../middleware/is-auth');
 const VilageGov = require('../models/vilgov');
+const adminController = require('../controllers/admin');
 const router = express.Router();
 
 // AUTHORIZTION *********************************************************
@@ -9,10 +10,10 @@ const router = express.Router();
 router.post(
     '/login',
     [
-        body('name').trim().not().isEmpty(),
+        body('userName').trim().not().isEmpty(),
         body('password').trim().not().isEmpty()
     ],
-    ()=>{}
+    adminController.login
 );
 
 
@@ -23,13 +24,13 @@ router.post(
 router.get(
     '/vilages', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.getVilages
 );
 
 router.get(
     '/vilage', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.getVilage
 );
 
 router.post(
@@ -41,7 +42,7 @@ router.post(
         body('district').trim().not().isEmpty(),
         body('population').isInt()
     ],
-    (req, res, next) => {}
+    adminController.addVilage
 );
 
 router.put(
@@ -53,13 +54,13 @@ router.put(
         body('district').trim().not().isEmpty(),
         body('population').isInt()
     ],
-    (req, res, next) => {}
+    adminController.updateVilage
 );
 
 router.delete(
     '/vilage', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.deleteVilage
 );
 
 
