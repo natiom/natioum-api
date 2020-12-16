@@ -8,15 +8,11 @@ const admin = sequelize.define('admin', {
         allowNull: false,
         primaryKey: true
     },
-    email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    password: {
+    userName: {
         type: Sequelize.STRING,
         allowNull: false
     },
-    userName: {
+    password: {
         type: Sequelize.STRING,
         allowNull: false
     }
