@@ -30,7 +30,7 @@ exports.login = async (req, res, next) => {
     if(userName === systemName && password === systemPassword){
         const token = jwt.sign(
             {
-                name: name
+                userName: userName
             },
             'supersecretadmincode',
             { expiresIn: '10h' }
@@ -173,6 +173,7 @@ exports.getVilage = async (req, res, next) => {
     }
     
     let vilageData = {};
+    let manager;
     
     try {
         const vilage = await Vilage.findByPk(vilageId);
@@ -184,10 +185,13 @@ exports.getVilage = async (req, res, next) => {
         }
         
         const goverment = await VilageGov.findOne({ where: { vilageId } });
+
+        const vilageManager = await VilageManager.findOne({ where: { vilageId } });
         
-        const managerId = await VilageManager.findOne({ where: { vilageId } });
-        const manager = await Manager.findOne({ where: { Manager } });
-    
+        if(vilageManager){
+            manager = await Manager.findOne({ where: { id: vilageManager.managerId } });
+        }
+        
         vilageData.info = vilage;
         vilageData.goverment = goverment || 'empty';
         vilageData.manager = manager || 'empty';
