@@ -254,8 +254,8 @@ exports.addVilageGov = async (req, res, next) => {
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     const email = req.body.email;
-    const userName = uniqueSlug(vilageId);
-    const password = uniqueSlug(vilageId);
+    const userName = uniqueSlug(vilageId + firstName + lastName);
+    const password = uniqueSlug(vilageId + firstName + lastName);
     
     try {
         const vilage = await Vilage.findByPk(vilageId);
@@ -302,7 +302,6 @@ exports.updateVilageGov = async (req, res, next) => {
         next(error);
     }
     
-    const vilageId = req.body.vilageId;
     const vilageGovId = req.body.vilageGovId;
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
@@ -312,13 +311,6 @@ exports.updateVilageGov = async (req, res, next) => {
     
     
     try {
-        const vilage = await Vilage.findByPk(vilageId);
-        
-        if(!vilage){
-            const error = new Error('Such vilage could not found.');
-            error.statusCode = 404;
-            throw error;
-        }
         
         const vilageGov = await VilageGov.findByPk(vilageGovId);
         
@@ -328,7 +320,6 @@ exports.updateVilageGov = async (req, res, next) => {
             throw error;
         }
         
-        vilageGov.vilageId = vilageId;
         vilageGov.firstName = firstName;
         vilageGov.lastName = lastName;
         vilageGov.email = email;
@@ -337,7 +328,7 @@ exports.updateVilageGov = async (req, res, next) => {
         
         const updatedVilageGov = await vilageGov.save();
         
-        if(!updatedVilage) {
+        if(!updatedVilageGov) {
             const error = new Error('Internal system error, vilage could not be updated!');
             error.statusCode = 500;
             throw error;
