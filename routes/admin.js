@@ -99,19 +99,12 @@ router.put(
     '/vilgov',
     isAuth.admin,
     [
+        body('vilageGovId').isInt(),
         body('firstName').trim().not().isEmpty(),
         body('lastName').trim().not().isEmpty(),
         body('userName').trim().not().isEmpty(),
-        body('email')
-            .isEmail()
-            .custom(value => {
-                return VilageGov.findOne({where: {email: value}}).then(userData => {
-                    if(userData) return Promise.reject('Email address already exist');
-                })
-            })
-            .normalizeEmail(),
-        body('password').trim().not().isEmpty(),
-        body('vilageId').isInt()
+        body('email').isEmail().normalizeEmail(),
+        body('password').trim().not().isEmpty()
     ],
     adminController.updateVilageGov
 );
