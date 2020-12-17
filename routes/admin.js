@@ -148,6 +148,7 @@ router.put(
     '/manager',
     isAuth.admin,
     [
+        body('managerId').isInt(),
         body('firstName').trim().not().isEmpty(),
         body('lastName').trim().not().isEmpty(),
         body('phoneNumber').isInt(),

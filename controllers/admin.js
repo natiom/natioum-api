@@ -423,8 +423,8 @@ exports.addManager = async (req, res, next) => {
     const lastName = req.body.lastName;
     const phoneNumber = req.body.phoneNumber;
     const position = req.body.position;
-    const userName = uniqueSlug(firstName);
-    const password = uniqueSlug(lastName);
+    const userName = uniqueSlug(lastName + firstName + phoneNumber);
+    const password = uniqueSlug(lastName + firstName + phoneNumber);
     
     try {
         const manager = await Manager.create({
@@ -558,7 +558,7 @@ exports.getManager = async (req, res, next) => {
             
             vilages = await Vilage.findAll({
                 where: { 
-                    vilageId: {
+                    id: {
                         [Op.in]: vilagesIds
                     }
                 } 
