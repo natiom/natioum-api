@@ -49,6 +49,7 @@ router.put(
     '/vilage',
     isAuth.admin,
     [
+        body('vilageId').isInt(),
         body('name').trim().not().isEmpty(),
         body('region').trim().not().isEmpty(),
         body('district').trim().not().isEmpty(),
