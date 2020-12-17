@@ -72,7 +72,7 @@ router.delete(
 router.get(
     '/vilgov', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.getVilageGov
 );
 
 router.post(
@@ -91,7 +91,7 @@ router.post(
             .normalizeEmail(),
         body('vilageId').isInt()
     ],
-    (req, res, next) => {}
+    adminController.addVilageGov
 );
 
 router.put(
@@ -112,13 +112,13 @@ router.put(
         body('password').trim().not().isEmpty(),
         body('vilageId').isInt()
     ],
-    (req, res, next) => {}
+    adminController.updateVilageGov
 );
 
 router.delete(
     '/vilgov', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.deleteVilageGov
 );
 
 
