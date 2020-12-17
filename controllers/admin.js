@@ -1,10 +1,11 @@
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const uniqueSlug = require('unique-slug');
 // DATABASE MODELS
 const Vilage = require('../models/vilage');
-const VilageGov = require('./models/vilgov');
-const VilageManager = require('./models/vil-manager');
-const Manager = require('./models/manager');
+const VilageGov = require('../models/vilgov');
+const VilageManager = require('../models/vil-manager');
+const Manager = require('../models/manager');
 
 
 
@@ -42,6 +43,8 @@ exports.login = async (req, res, next) => {
     }
 
 }
+
+
 
 
 
@@ -164,7 +167,7 @@ exports.getVilage = async (req, res, next) => {
     if(!vilageId){
         const error = new Error(`You did not pass a 'vilageId' query parameter`);
         error.statusCode = 422;
-        error.data = 'query[prodId] - is empty';
+        error.data = 'query[vilageId] - is empty';
         next(error);
     }
     
@@ -204,7 +207,7 @@ exports.deleteVilage = async (req, res, next) => {
     if(!vilageId){
         const error = new Error(`You did not pass a 'vilageId' query parameter`);
         error.statusCode = 422;
-        error.data = 'query[prodId] - is empty';
+        error.data = 'query[vilageId] - is empty';
         next(error);
     }
     
@@ -219,12 +222,215 @@ exports.deleteVilage = async (req, res, next) => {
         
         await vilage.destroy();
         
-        res.status(200).json({ msg: 'Vilage successfuly deleted from cart!' });
+        res.status(200).json({ msg: 'Vilage successfuly deleted!' });
     }
     catch(err) {
         next(err);
     }
 }
+
+
+
+
+
+// VILAGE GOVERMENT ************************************************************
+
+exports.addVilageGov = async (req, res, next) => {
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error);
+    }
+    
+    const vilageId = req.body.vilageId;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const email = req.body.email;
+    const userName = uniqueSlug(vilageId);
+    const password = uniqueSlug(vilageId);
+    
+    try {
+        const vilage = await Vilage.findByPk(vilageId);
+        
+        if(!vilage){
+            const error = new Error('Such vilage could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const vilageGov = await VilageGov.create({
+            vilageId,
+            firstName,
+            lastName,
+            email,
+            userName,
+            password
+        });
+        
+        
+        if(!vilageGov) {
+            const error = new Error('Internal system error, new vilage gov could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ vilageGov });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+}
+
+
+
+exports.updateVilageGov = async (req, res, next) => {
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error);
+    }
+    
+    const vilageId = req.body.vilageId;
+    const vilageGovId = req.body.vilageGovId;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const email = req.body.email;
+    const userName = req.body.userName;
+    const password = req.body.password;
+    
+    
+    try {
+        const vilage = await Vilage.findByPk(vilageId);
+        
+        if(!vilage){
+            const error = new Error('Such vilage could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const vilageGov = await VilageGov.findByPk(vilageGovId);
+        
+        if(!vilageGov){
+            const error = new Error('Such vilage goverment could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        vilageGov.vilageId = vilageId;
+        vilageGov.firstName = firstName;
+        vilageGov.lastName = lastName;
+        vilageGov.email = email;
+        vilageGov.userName = userName;
+        vilageGov.password = password;
+        
+        const updatedVilageGov = await vilageGov.save();
+        
+        if(!updatedVilage) {
+            const error = new Error('Internal system error, vilage could not be updated!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ vilageGov: updatedVilageGov });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+}
+
+
+
+exports.getVilageGov = async (req, res, next) => {
+    
+    const vilageGovId = req.query.vilageGovId;
+    
+    if(!vilageGovId){
+        const error = new Error(`You did not pass a 'vilageGovId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[vilageGovId] - is empty';
+        next(error);
+    }
+    
+    
+    try {
+        const vilageGov = await VilageGov.findByPk(vilageGovId);
+        
+        if(!vilageGov){
+            const error = new Error('Such vilage goverment could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        res.status(200).json({ vilageGov });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+
+
+exports.deleteVilageGov = async (req, res, next) => {
+    
+    const vilageGovId = req.query.vilageGovId;
+    
+    if(!vilageGovId){
+        const error = new Error(`You did not pass a 'vilageGovId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[vilageGovId] - is empty';
+        next(error);
+    }
+    
+    try {
+        const vilageGov = await VilageGov.findByPk(vilageGovId);
+        
+        if(!vilageGov){
+            const error = new Error('Such vilage goverment could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        await vilageGov.destroy();
+        
+        res.status(200).json({ msg: 'Vilage goverment account successfuly deleted!' });
+    }
+    catch(err) {
+        next(err);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
