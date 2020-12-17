@@ -129,13 +129,13 @@ router.delete(
 router.get(
     '/managers', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.getManagers
 );
 
 router.get(
     '/manager', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.getManager
 );
 
 router.post(
@@ -147,7 +147,7 @@ router.post(
         body('phoneNumber').isInt(),
         body('position').trim().not().isEmpty(),
     ],
-    (req, res, next) => {}
+    adminController.addManager
 );
 
 router.put(
@@ -161,13 +161,13 @@ router.put(
         body('userName').trim().not().isEmpty(),
         body('password').trim().not().isEmpty(),
     ],
-    (req, res, next) => {}
+    adminController.updateManager
 );
 
 router.delete(
     '/manager', 
     isAuth.admin,
-    (req, res, next) => {}
+    adminController.deleteManager
 );
 
 
