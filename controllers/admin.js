@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const uniqueSlug = require('unique-slug');
 // DATABASE MODELS
@@ -171,7 +172,7 @@ exports.getVilage = async (req, res, next) => {
         next(error);
     }
     
-    let vilage = {};
+    let vilageData = {};
     
     try {
         const vilage = await Vilage.findByPk(vilageId);
@@ -187,11 +188,11 @@ exports.getVilage = async (req, res, next) => {
         const managerId = await VilageManager.findOne({ where: { vilageId } });
         const manager = await Manager.findOne({ where: { Manager } });
     
-        vilage.info = vilage;
-        vilage.goverment = vilage || 'empty';
-        vilage.manager = manager || 'empty';
+        vilageData.info = vilage;
+        vilageData.goverment = goverment || 'empty';
+        vilageData.manager = manager || 'empty';
         
-        res.status(200).json({ vilage: vilage });
+        res.status(200).json({ vilage: vilageData });
     }
     catch(err){
         next(err);
@@ -411,21 +412,209 @@ exports.deleteVilageGov = async (req, res, next) => {
 
 
 
+// MANAGER ****************************************************************
+
+exports.addManager = async (req, res, next) => {
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error);
+    }
+    
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const phoneNumber = req.body.phoneNumber;
+    const position = req.body.position;
+    const userName = uniqueSlug(firstName);
+    const password = uniqueSlug(lastName);
+    
+    try {
+        const manager = await Manager.create({
+            firstName,
+            lastName,
+            phoneNumber,
+            position,
+            userName,
+            password
+        });
+        
+        
+        if(!manager) {
+            const error = new Error('Internal system error, new manager could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ manager });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+}
 
 
 
+exports.updateManager = async (req, res, next) => {
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error);
+    }
+    
+    const managerId = req.body.managerId;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const phoneNumber = req.body.phoneNumber;
+    const position = req.body.position;
+    const userName = req.body.userName;
+    const password = req.body.password;
+    
+    
+    try {
+        const manager = await Manager.findByPk(managerId);
+        
+        if(!manager){
+            const error = new Error('Such manager could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        manager.firstName = firstName;
+        manager.lastName = lastName;
+        manager.phoneNumber = phoneNumber;
+        manager.position = position;
+        manager.userName = userName;
+        manager.password = password;
+        
+        const updatedManager = await manager.save();
+        
+        if(!updatedManager) {
+            const error = new Error('Internal system error, manager could not be updated!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ manager: updatedManager });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+}
 
 
 
+exports.getManagers = async (req, res, next) => {
+    
+    const currentPage = req.query.page || 1;
+    const perPage = 10;
+    
+    try {
+        let managers = await Manager.findAll({
+            offset: (currentPage - 1) * perPage, 
+            limit: perPage
+        });
+        
+        res.status(200).json({ managers: managers });
+    }
+    catch(err) {
+        next(err);
+    }
+}
 
 
 
+exports.getManager = async (req, res, next) => {
+    
+    const managerId = req.query.managerId;
+    
+    if(!managerId){
+        const error = new Error(`You did not pass a 'managerId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[managerId] - is empty';
+        next(error);
+    }
+    
+    let managerData = {};
+    let vilages;
+    
+    try {
+        const manager = await Manager.findByPk(managerId);
+        
+        if(!manager){
+            const error = new Error('Such manager could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        let vilagesIds = await VilageManager.findAll({ attributes: ['vilageId'], where: { managerId } });
+        
+        if(vilagesIds){
+            vilagesIds = vilagesIds.map(item => {
+                return item.vilageId;
+            })
+            
+            vilages = await Vilage.findAll({
+                where: { 
+                    vilageId: {
+                        [Op.in]: vilagesIds
+                    }
+                } 
+            });
+            
+        }
+        else {
+            vilages = 'empty';
+        }
+        
+    
+        managerData.info = manager;
+        managerData.vilages = vilages;
+        
+        res.status(200).json({ manager: managerData });
+    }
+    catch(err){
+        next(err);
+    }
+}
 
 
 
-
-
-
+exports.deleteManager = async (req, res, next) => {
+    
+    const managerId = req.query.managerId;
+    
+    if(!managerId){
+        const error = new Error(`You did not pass a 'managerId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[managerId] - is empty';
+        next(error);
+    }
+    
+    try {
+        const manager = await Manager.findByPk(managerId);
+        
+        if(!manager){
+            const error = new Error('Such manager could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        await manager.destroy();
+        
+        res.status(200).json({ msg: 'Manager account successfuly deleted!' });
+    }
+    catch(err) {
+        next(err);
+    }
+}
 
 
 
