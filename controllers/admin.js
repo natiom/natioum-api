@@ -22,7 +22,7 @@ exports.login = async (req, res, next) => {
     
     const userName = req.body.userName;
     const password = req.body.password;
-    
+    console.log(userName);
     const systemName = process.env.SYSTEMNAME || 'empty';
     const systemPassword = process.env.SYSTEMPASSWORD || 'empty';
     
@@ -612,6 +612,43 @@ exports.deleteManager = async (req, res, next) => {
 }
 
 
+
+exports.setManager = async (req, res, next) => {
+    try {
+        const { count: vilageCount, rows: vilageArray } = await Vilage.findAndCountAll();
+        const { count: managerCount, rows: managerArray } = await Manager.findAndCountAll();
+        
+        if(!(vilageCount && vilageCount)){
+            const error = new Error('There are no vilages or managers!');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const perCount = Math.floor(vilageCount / managerCount);
+        
+        let managerCounter = 0;
+        
+        vilageArray.forEach((item, index) => {
+            
+            VilageManager.create({
+                vilageId: item.id,
+                managerId: managerArray[managerCounter].id 
+            });
+            
+            if(index && index % perCount === 0 && managerCounter + 1 !== managerCount){
+                managerCounter++;    
+            }
+            
+        });
+        
+        res.status(200).json({ msg: 'Vilages distributed to managers' });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+    
+}
 
 
 
