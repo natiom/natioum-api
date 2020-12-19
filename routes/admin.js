@@ -165,7 +165,11 @@ router.delete(
     adminController.deleteManager
 );
 
-
+router.put(
+    '/vilagemanagers', 
+    isAuth.admin,
+    adminController.setManager
+);
 
 
 
