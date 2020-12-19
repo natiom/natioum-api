@@ -25,12 +25,12 @@ const userCredential = sequelize.define('userCredential', {
         allowNull: false,
     },
     isActive: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
     },
     isAccepted: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
     }
 });
 
