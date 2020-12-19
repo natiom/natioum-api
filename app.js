@@ -17,6 +17,25 @@ const app = express();
 
 // All Used External Middlewares
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'images');
+  },
+  filename: function (req, file, cb) {
+    cb(null, uniqueSlug() + Date.now() + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+    if(file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'){
+        cb(null, true);
+    }else{
+        cb(null, false);
+    }
+}
+
+
+app.use(multer({ storage: storage, fileFilter: fileFilter }).array('myFiles', 12));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
 app.use(bodyParser.json());
 app.use(helmet());
@@ -31,6 +50,7 @@ app.use((req, res, next) => {
 // All Routes Declarations
 
 const admin = require('./routes/admin');
+const user = require('./routes/user');
 
 
 // All Used Express Routes
@@ -41,6 +61,7 @@ app.use('/word', (req, res, next) => {
 });
 
 app.use('/admin', admin);
+app.use('/user', user);
 
 
 
@@ -50,7 +71,8 @@ const Vilage = require('./models/vilage');
 const VilageGov = require('./models/vilgov');
 const VilageManager = require('./models/vil-manager');
 const Manager = require('./models/manager');
-
+const UserCredential = require('./models/user-credential');
+const UserPassport = require('./models/user-passport');
 
 
 // All Models Associations
@@ -64,6 +86,8 @@ VilageManager.belongsTo(Vilage);
 Manager.hasMany(VilageManager, {onDelete: 'CASCADE'});
 VilageManager.belongsTo(Manager);
 
+UserCredential.hasOne(UserPassport, {onDelete: 'CASCADE'});
+UserPassport.belongsTo(UserCredential);
 
 
 // Error Handler Middleware Which Should Executes Last
