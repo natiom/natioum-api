@@ -59,7 +59,6 @@ router.post(
     '/comment',
     isAuth.user,
     [
-        body('userName').trim().not().isEmpty(),
         body('text').trim().not().isEmpty(),
         body('postId').isInt(),
     ],
