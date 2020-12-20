@@ -73,6 +73,8 @@ const VilageManager = require('./models/vil-manager');
 const Manager = require('./models/manager');
 const UserCredential = require('./models/user-credential');
 const UserPassport = require('./models/user-passport');
+const UserPost = require('./models/user-post');
+const Comment = require('./models/comment');
 
 
 // All Models Associations
@@ -83,11 +85,25 @@ VilageGov.belongsTo(Vilage);
 Vilage.hasOne(VilageManager, {onDelete: 'CASCADE'});
 VilageManager.belongsTo(Vilage);
 
+Vilage.hasMany(UserPost, {onDelete: 'CASCADE'});
+UserPost.belongsTo(Vilage);
+
 Manager.hasMany(VilageManager, {onDelete: 'CASCADE'});
 VilageManager.belongsTo(Manager);
 
 UserCredential.hasOne(UserPassport, {onDelete: 'CASCADE'});
 UserPassport.belongsTo(UserCredential);
+
+UserCredential.hasMany(UserPost, {onDelete: 'CASCADE'});
+UserPost.belongsTo(UserCredential);
+
+UserCredential.hasMany(Comment, {onDelete: 'CASCADE'});
+Comment.belongsTo(UserCredential);
+
+UserPost.hasMany(Comment, {onDelete: 'CASCADE'});
+Comment.belongsTo(UserPost);
+
+
 
 
 // Error Handler Middleware Which Should Executes Last
