@@ -198,6 +198,53 @@ exports.getPosts = async (req, res, next) => {
 
 
 
+exports.getPost = async (req, res, next) => {
+    
+    const postId = req.query.postId;
+    
+    if(!postId){
+        const error = new Error(`You did not pass a 'postId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[postId] - is empty';
+        next(error);
+    }
+    
+    let postData = {};
+    let manager;
+    
+    try {
+        const post = await UserPost.findByPk(postId);
+        
+        const vilage = await Vilage.findByPk(post.vilageId);
+        
+        if(!vilage){
+            const error = new Error('Such vilage could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const comments = await Comment.findAll({ where: { userPostId: post.id } });
+        
+        if(vilageManager){
+            manager = await Manager.findOne({ where: { id: vilageManager.managerId } });
+        }
+        
+        postData.info = post;
+        postData.vilage = vilage;
+        vilageData.comments = comments || 'empty';
+        
+        res.status(200).json({ post: postData });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+
+
+
+
+
 
 
 
