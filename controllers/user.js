@@ -244,7 +244,50 @@ exports.getPost = async (req, res, next) => {
 
 
 
-
+exports.createComment = async (req, res, next) => {
+    
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    
+    const text = req.body.text;
+    const userId = req.userId;
+    const postId = req.body.postId;
+    
+    try {
+        const post = await UserPost.findByPk(postId);
+        const user = await UserCredential.findByPk(userId);
+        
+        if(!user && post){
+            const error = new Error('Such post or user could not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const comment = await Comment.create({
+            name: user.userName,
+            text: text,
+            userCredentialId: user.id,
+            userPostId: post.id
+        });
+        
+        if(!comment) {
+            const error = new Error('Internal system error, new comment could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ comment: comment });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+};
 
 
 
