@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const { Op } = require("sequelize");
 // DATABASE MODELS
 const UserCredential = require('../models/user-credential');
+const UserPost = require('../models/user-post');
+const Vilage = require('../models/vilage');
+const Comment = require('../models/comment');
 
 
 exports.signup = async (req, res, next) => {
@@ -85,7 +88,7 @@ exports.login = async (req, res, next) => {
     
     try {
         
-        const user = await User.findOne({ 
+        const user = await UserCredential.findOne({ 
             where: {
                 [Op.or]: [
                   { userName: account },
@@ -157,6 +160,85 @@ exports.verify = async (req, res, next) => {
         next(err);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exports.getPosts = async (req, res, next) => {
+    
+    const currentPage = req.query.page || 1;
+    const perPage = 10;
+    
+    try {
+        let posts = await UserPost.findAll({
+            order: [
+                ['createdAt', 'DESC']
+            ],
+            offset: (currentPage - 1) * perPage, 
+            limit: perPage
+        });
+
+        res.status(200).json({ posts: posts });
+    }
+    catch(err) {
+        next(err);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
