@@ -26,11 +26,11 @@ const userPost = sequelize.define('userPost', {
     },
     like: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        defaultValue: 0
     },
     likeNumber: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        defaultValue: 0
     }
 });
 
