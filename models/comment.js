@@ -8,13 +8,17 @@ const comment = sequelize.define('comment', {
         allowNull: false,
         primaryKey: true
     },
+    name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+    },
     text: {
         type: Sequelize.STRING,
         allowNull: false,
     }
 });
 
-module.exports = admin;
+module.exports = comment;
 
 
 
