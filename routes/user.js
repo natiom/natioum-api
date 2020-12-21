@@ -70,6 +70,7 @@ router.put(
     isAuth.user,
     [
         body('text').trim().not().isEmpty(),
+        body('commentId').isInt(),
     ],
     (req, res, next) => {}
 );
@@ -97,6 +98,7 @@ router.put(
     '/application',
     isAuth.user,
     [
+        body('applicationId').isInt(),
         body('title').trim().not().isEmpty(),
         body('description').trim().not().isEmpty()
     ],
@@ -110,6 +112,14 @@ router.delete(
 );
 
 
+router.post(
+    '/like',
+    isAuth.user,
+    [
+        body('postId').trim().not().isEmpty()
+    ],
+    (req, res, next) => {}
+);
 
 
 

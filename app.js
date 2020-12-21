@@ -75,6 +75,7 @@ const UserCredential = require('./models/user-credential');
 const UserPassport = require('./models/user-passport');
 const UserPost = require('./models/user-post');
 const Comment = require('./models/comment');
+const UserLike = require('./models/user-like');
 
 
 // All Models Associations
@@ -88,6 +89,9 @@ VilageManager.belongsTo(Vilage);
 Vilage.hasMany(UserPost, {onDelete: 'CASCADE'});
 UserPost.belongsTo(Vilage);
 
+Vilage.hasMany(UserCredential, {onDelete: 'CASCADE'});
+UserCredential.belongsTo(Vilage);
+
 Manager.hasMany(VilageManager, {onDelete: 'CASCADE'});
 VilageManager.belongsTo(Manager);
 
@@ -100,8 +104,15 @@ UserPost.belongsTo(UserCredential);
 UserCredential.hasMany(Comment, {onDelete: 'CASCADE'});
 Comment.belongsTo(UserCredential);
 
+UserCredential.hasMany(UserLike, {onDelete: 'CASCADE'});
+UserLike.belongsTo(UserCredential);
+
 UserPost.hasMany(Comment, {onDelete: 'CASCADE'});
 Comment.belongsTo(UserPost);
+
+UserPost.hasMany(UserLike, {onDelete: 'CASCADE'});
+UserLike.belongsTo(UserPost);
+
 
 
 

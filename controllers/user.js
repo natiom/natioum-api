@@ -9,6 +9,7 @@ const UserCredential = require('../models/user-credential');
 const UserPost = require('../models/user-post');
 const Vilage = require('../models/vilage');
 const Comment = require('../models/comment');
+const UserLike = require('./models/user-like');
 
 
 exports.signup = async (req, res, next) => {
@@ -291,177 +292,77 @@ exports.createComment = async (req, res, next) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-exports.getCart = async (req, res, next) => {
-    
-    const userId = req.userId;
-    
-    try {
-        let carts = await Cart.findAll({ where: { userId: userId } });
-        
-        for(let i = 0; i < carts.length; i++){
-            carts[i].dataValues.image = await Image.findOne({ attributes: ['imageUrl'], where: { productId: carts[i].productId } });
-            carts[i].dataValues.product = await Product.findOne({ attributes: ['name', 'price', 'discount'], where: { id: carts[i].productId } });
-        }
-
-        res.status(200).json({ carts: carts });
-    }
-    catch(err) {
-        next(err);
-    }
-}
-
-
-exports.addCart = async (req, res, next) => {
+exports.updateComment = async (req, res, next) => {
     
     const errors = validationResult(req);
-    
     if(!errors.isEmpty()){
         const error = new Error('Validation failed, entered data is incorrect.');
         error.statusCode = 422;
         error.data = errors.array();
-        next(error);
+        throw error;
     }
     
-    const prodId = req.body.prodId;
+    const text = req.body.text;
     const userId = req.userId;
+    const commentId = req.body.commentId;
     
     try {
-        const user = await User.findByPk(userId);
         
-        if(!user){
-            const error = new Error('Such user could not found.');
-            error.statusCode = 404;
-            throw error;
-        }
-        
-        const newCartPt = await Cart.create({
-            productId: prodId,
-            userId: userId
+        const comment = await Comment.findOne({ 
+            where: {  
+                userCredentialId: userId,
+                id: commentId
+            } 
         });
         
-        res.status(200).json({ newCartPt: newCartPt });
-    }
-    catch(err) {
-        next(err);
-    }   
-}
-
-
-exports.deleteCart = async (req, res, next) => {
-    
-    if(req.query.cartId === undefined || req.query.cartId === null){
-        const error = new Error(`You did not pass a 'cardId' query parameter`);
-        error.statusCode = 422;
-        error.data = 'query[cardId] - is empty';
-        next(error);
-    }
-    
-    const cartId = req.query.cartId;
-    const userId = req.userId;
-    
-    try {
-        const cart = await Cart.findOne({ where: { id: cartId, userId: userId } });
-        
-        if(!cart){
-            const error = new Error('Such cart could not found.');
+        if(!comment){
+            const error = new Error('Such comment could not found');
             error.statusCode = 404;
             throw error;
         }
         
-        await cart.destroy();
+        comment.text = text;
         
-        res.status(200).json({ msg: 'Product successfuly deleted from cart!' });
+        const updatedComment = await comment.save();
+        
+        if(!updatedComment) {
+            const error = new Error('Internal system error, new comment could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ comment: updatedComment });
     }
     catch(err) {
         next(err);
     }
-}
+    
+};
 
 
-exports.setCartNumber = async (req, res, next) => {
+exports.deleteComment = async (req, res, next) => {
     
-    const errors = validationResult(req);
+    const commentId = req.query.commentId;
     
-    if(!errors.isEmpty()){
-        const error = new Error('Validation failed, entered data is incorrect.');
+    if(!commentId){
+        const error = new Error(`You did not pass a 'vilageId' query parameter`);
         error.statusCode = 422;
-        error.data = errors.array();
+        error.data = 'query[vilageId] - is empty';
         next(error);
     }
     
-    const cartId = req.body.cartId;
-    const quantity = req.body.quantity;
-    const userId = req.userId;
-    
     try {
-        const cart = await Cart.findOne({ where: { id: cartId, userId: userId } });
+        const comment = await Comment.findByPk(commentId);
         
-        if(!cart){
-            const error = new Error('Such cart could not found.');
+        if(!comment){
+            const error = new Error('Such vilage could not found.');
             error.statusCode = 404;
             throw error;
         }
         
-        cart.quantity = quantity;
-        const updatedCartPt = await cart.save();
+        await comment.destroy();
         
-        res.status(200).json({ updatedCartPt: updatedCartPt });
+        res.status(200).json({ msg: 'Comment successfuly deleted!' });
     }
     catch(err) {
         next(err);
@@ -469,47 +370,151 @@ exports.setCartNumber = async (req, res, next) => {
 }
 
 
-exports.checkOut = async (req, res, next) => {
-    const errors = validationResult(req);
+
+
+exports.createApplication = async (req, res, next) => {
     
+    const errors = validationResult(req);
     if(!errors.isEmpty()){
         const error = new Error('Validation failed, entered data is incorrect.');
         error.statusCode = 422;
         error.data = errors.array();
-        next(error);
+        throw error;
     }
     
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const productName = req.body.productName;
-    const quantity = req.body.quantity;
-    const price = req.body.price;
-    const discount = req.body.discount;
-    const payService = req.body.payService;
-    const cartNumber = req.body.cartNumber;
+    const title = req.body.title;
+    const description = req.body.description;
     const userId = req.userId;
     
+    if(!req.files){
+        const error = new Error('No image provided.');
+        error.statusCode = 422;
+        throw error;
+    }
+    
+    const fileImages = req.files;
+    
     try {
-        const user = await User.findByPk(userId);
+        const user = await UserCredential.findByPk(userId);
         
         if(!user){
-            const error = new Error('Such user could not found.');
+            const error = new Error('Such user could not found');
             error.statusCode = 404;
             throw error;
         }
         
-        const userOrder = await user.createOrder({
-            firstName: firstName,
-            lastName: lastName,
-            productName: productName,
-            quantity: quantity,
-            price: price,
-            discount: discount,
-            payService: payService,
-            cartNumber: cartNumber
+        
+        
+        const application = await UserPost.create({
+            title: title,
+            description: description,
+            status: 'created',
+            imageUrl: fileImages[0].filename,
+            status: 'created',
+            vilageId: user.vilageId,
+            userCredentialId: user.id
         });
         
-        res.status(200).json({ msg: 'Product successfuly ordered!'});
+        if(!application) {
+            const error = new Error('Internal system error, new application could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ application: application });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+};
+
+
+
+exports.updateApplication = async (req, res, next) => {
+    
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    
+    const title = req.body.title;
+    const description = req.body.description;
+    const applicationId = req.body.applicationId;
+    const deletedImage = req.body.deletedImage || 0;
+    const userId = req.userId;
+    
+    if(!req.files){
+        const error = new Error('No image provided.');
+        error.statusCode = 422;
+        throw error;
+    }
+    
+    const fileImages = req.files;
+    
+    
+    
+    try {
+        const application = await UserPost.findOne({
+            where: {
+                id: applicationId,
+                userCredentialId: userId
+            }
+        })
+        
+        application.title = title;
+        application.description = description;
+        application.imageUrl = fileImages[0].filename;
+        
+        if(deletedImage){
+            deleteImage(deletedImage);
+        }
+        
+        const updatedApplication = await application.save();
+        
+        if(!updatedApplication) {
+            const error = new Error('Internal system error, new application could not updated!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ application: updatedApplication });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+};
+
+
+exports.deleteApplication = async (req, res, next) => {
+    
+    const applicationId = req.query.applicationId;
+    
+    if(!applicationId){
+        const error = new Error(`You did not pass a 'applicationId' query parameter`);
+        error.statusCode = 422;
+        error.data = 'query[applicationId] - is empty';
+        next(error);
+    }
+    
+    try {
+        const application = await UserPost.findByPk(applicationId);
+        
+        if(!application){
+            const error = new Error('Such vilage could not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        deleteImage(application.imageUrl);
+        
+        await vilage.destroy();
+        
+        res.status(200).json({ msg: 'Application successfuly deleted!' });
     }
     catch(err) {
         next(err);
@@ -517,6 +522,76 @@ exports.checkOut = async (req, res, next) => {
 }
 
 
+exports.createLike = async (req, res, next) => {
+    
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const error = new Error('Validation failed, entered data is incorrect.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    
+    const postId = req.body.postId;
+    const userId = req.query.use
+    
+    try {
+        const user = await UserCredential.findByPk(userId);
+        const post = await UserPost.findByPk(postId);
+        
+        if(!user){
+            const error = new Error('Such user could not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        if(!post){
+            const error = new Error('Such post could not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const like = await UserLike.create({
+            like: true,
+            userCredentialId: userId,
+            userPostId: postId
+        });
+        
+        post.likeNumber = post.likeNumber + 1;
+        
+        const updatedPost = await post.save();
+        
+        if(!like) {
+            const error = new Error('Internal system error, new like could not save!');
+            error.statusCode = 500;
+            throw error;
+        }
+        
+        res.status(200).json({ like: like });
+    }
+    catch(err) {
+        next(err);
+    }
+    
+};
+
+
+
+
+const deleteImage = fileName => {
+    const filePath = path.join(__dirname, '../images', fileName);
+    fs.unlink(filePath, err => console.log(err));
+    
+    image.findOne({ where: { imageUrl: fileName } })
+        .then(imageInstance => {
+            if(imageInstance !== null){
+                imageInstance.destroy();
+            }
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
 
 
 
